@@ -3,180 +3,202 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>WishVault - Savings Tracker</title>
+  <title>Savings Goal Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f0f2f5;
+      --bg: #f5f7fa;
       --text: #222;
-      --card: #fff;
-      --header: #053C5E;
-      --accent: #053C5E;
+      --card: #ffffff;
+      --header: #4b2c63;
+      --accent: #673ab7;
+      --accent-light: #8e66dc;
+      --footer: #f0f0f0;
     }
+
     [data-theme="dark"] {
       --bg: #121212;
-      --text: #E0E0E0;
-      --card: #1F1F1F;
-      --header: #1F1F1F;
-      --accent: #0353A4;
+      --text: #f5f5f5;
+      --card: #1e1e1e;
+      --header: #8e66dc;
+      --accent: #d59df7;
+      --accent-light: #ae7ee3;
+      --footer: #1a1a1a;
     }
+
     * { box-sizing: border-box; }
+
     body {
       font-family: 'Montserrat', sans-serif;
       margin: 0;
-      background-color: var(--bg);
+      background: var(--bg);
       color: var(--text);
-      transition: background 0.3s, color 0.3s;
-      position: relative;
-      min-height: 100vh;
+      transition: 0.3s;
       padding-bottom: 100px;
     }
+
     header {
-      background-color: var(--header);
+      background: var(--header);
       color: white;
-      padding: 1rem;
       text-align: center;
+      padding: 1rem;
+      font-size: 1.5rem;
       font-weight: 600;
     }
-    .container {
-      padding: 1rem;
-      max-width: 800px;
-      margin: auto;
-    }
-    .goal-form input, .goal-form button {
-      padding: 0.5rem;
-      margin: 0.3rem 0.2rem;
-      font-family: 'Montserrat', sans-serif;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-    .goal-card {
-      background-color: var(--card);
-      border-radius: 15px;
-      padding: 1rem;
-      margin: 1rem 0;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .goal-card.completed {
-      background-color: #4caf50;
-      color: white;
-    }
-    [data-theme="light"] .goal-card.completed {
-      background-color: #d4edda;
-      color: #222;
-    }
-    .goal-actions button {
-      margin-right: 0.5rem;
-    }
-    .summary {
-      background-color: var(--card);
-      padding: 1rem;
-      border-radius: 12px;
-      margin-bottom: 1rem;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .history {
-      margin-top: 2rem;
-    }
-    .theme-toggle {
-      position: fixed;
-      bottom: 60px;
-      right: 20px;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background-color: var(--accent);
-      color: white;
-      font-size: 1.2rem;
-      border: none;
-      cursor: pointer;
-      z-index: 10;
-    }
-    .add-goal-btn {
-      position: fixed;
-      bottom: 60px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: var(--accent);
-      color: white;
-      padding: 10px 20px;
-      border-radius: 20px;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    .history-controls button {
-      background-color: crimson;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    ul#historyList li {
-      margin-bottom: 5px;
-    }
+
     #splash {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #001021;
+      background: var(--header);
       color: white;
       display: flex;
-      align-items: center;
-      justify-content: center;
       flex-direction: column;
-      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
       font-size: 1.2rem;
       font-weight: 500;
-      animation: fadeout 1s ease 2.5s forwards;
-      white-space: normal;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-      text-align: center;
-      padding: 1rem;
+      animation: fadeOut 1s ease 2s forwards;
     }
-    @keyframes fadeout {
+
+    @keyframes fadeOut {
       to {
         opacity: 0;
         visibility: hidden;
       }
     }
-    footer {
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 1rem;
+    }
+
+    .summary {
+      background: var(--card);
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 1.5rem;
+    }
+
+    .goal-form input {
+      padding: 0.5rem;
+      margin: 0.3rem 0.2rem;
+      width: 48%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .goal-card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+      transition: 0.3s;
+    }
+
+    .goal-card.completed {
+      background: var(--accent-light);
+      color: white;
+    }
+
+    .goal-actions button {
+      margin-right: 0.5rem;
+      padding: 0.4rem 0.8rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+      font-weight: 500;
+    }
+
+    .goal-actions button:last-child {
+      background: crimson;
+    }
+
+    .add-goal-btn {
+      position: fixed;
+      bottom: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-weight: 600;
+      font-size: 1rem;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .theme-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--accent);
+      color: white;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      border: none;
+      cursor: pointer;
+    }
+
+    .history {
+      margin-top: 2rem;
+    }
+
+    .footer {
       position: fixed;
       bottom: 0;
       left: 0;
-      right: 0;
-      background-color: var(--header);
-      color: white;
+      width: 100%;
       text-align: center;
-      padding: 0.7rem 1rem;
-      font-size: 0.9rem;
-      z-index: 1000;
-      box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.2);
+      background: var(--footer);
+      padding: 10px;
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+
+    .goal-form input[type="number"],
+    .goal-form input[type="date"],
+    .goal-form input[type="text"] {
+      width: 48%;
+      margin: 4px 1%;
+    }
+
+    ul#historyList {
+      padding-left: 20px;
     }
   </style>
 </head>
 <body data-theme="light">
   <div id="splash">
-    <p>“Do not save what is left after spending, but spend what is left after saving.”</p>
-    <small>- Warren Buffett</small>
+    <p>"A goal without a plan is just a wish."</p>
+    <small>- Antoine de Saint-Exupéry</small>
   </div>
 
-  <header>WishVault - Savings Tracker</header>
+  <header>Savings Goal Tracker</header>
 
   <div class="container">
     <div class="summary">
       <h3>Summary</h3>
-      <p>Total Amount Saved: ₹<span id="amountSaved">0</span></p>
-      <p>Total Monthly Saving Required: ₹<span id="monthlyRequired">0</span></p>
-      <p>Goals Achieved: <span id="completedGoals">0</span></p>
+      <p>Total Saved: ₹<span id="amountSaved">0</span></p>
+      <p>Monthly Saving Needed: ₹<span id="monthlyRequired">0</span></p>
+      <p>Goals Completed: <span id="completedGoals">0</span></p>
       <input type="number" id="updateSaved" placeholder="Update total saved" />
       <button onclick="updateTotalSaved()">Update</button>
     </div>
 
     <div class="goal-form">
-      <input type="text" id="name" placeholder="Item name" />
-      <input type="number" id="price" placeholder="Price (₹)" />
+      <input type="text" id="name" placeholder="Goal name" />
+      <input type="number" id="price" placeholder="Amount (₹)" />
       <input type="date" id="startDate" />
       <input type="date" id="targetDate" />
     </div>
@@ -186,18 +208,13 @@
     <div class="history">
       <h3>Completed Goals</h3>
       <ul id="historyList"></ul>
-      <div class="history-controls">
-        <button onclick="clearHistory()">Delete All History</button>
-      </div>
+      <button onclick="clearHistory()">Clear All</button>
     </div>
   </div>
 
-  <button class="add-goal-btn" onclick="addGoal()">Add Goal</button>
-  <button class="theme-toggle" onclick="toggleTheme()">🌗</button>
-
-  <footer>
-    Developed by © Hameed Afsar K M
-  </footer>
+  <button class="add-goal-btn" onclick="addGoal()">+ Add Goal</button>
+  <button class="theme-toggle" onclick="toggleTheme()">☾</button>
+  <div class="footer">© 2025 | Built with dedication 🧠</div>
 
   <script>
     let goals = [];
@@ -211,9 +228,17 @@
     }
 
     function loadData() {
-      goals = JSON.parse(localStorage.getItem("goals")) || [];
+      goals = (JSON.parse(localStorage.getItem("goals")) || []).map(g => ({
+        ...g,
+        startDate: new Date(g.startDate),
+        date: new Date(g.date)
+      }));
       totalSaved = Number(localStorage.getItem("saved")) || 0;
-      completed = JSON.parse(localStorage.getItem("completed")) || [];
+      completed = (JSON.parse(localStorage.getItem("completed")) || []).map(g => ({
+        ...g,
+        date: new Date(g.date),
+        startDate: new Date(g.startDate)
+      }));
     }
 
     function updateTotalSaved() {
@@ -230,7 +255,7 @@
       const price = parseFloat(document.getElementById("price").value);
       const startDate = new Date(document.getElementById("startDate").value);
       const targetDate = new Date(document.getElementById("targetDate").value);
-      if (!name || isNaN(price) || isNaN(startDate) || isNaN(targetDate)) return alert("Please fill all fields correctly");
+      if (!name || isNaN(price) || isNaN(startDate) || isNaN(targetDate)) return alert("Fill all fields correctly");
 
       goals.push({ name, price, startDate, date: targetDate, saved: false });
       saveData();
@@ -242,67 +267,64 @@
       document.getElementById("targetDate").value = '';
     }
 
-    function calculateMonths(startDate, endDate) {
-      const start = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
-      const end = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
-      return Math.max(1, (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1);
+    function calculateMonthsLeft(start, end) {
+      const s = new Date(start.getFullYear(), start.getMonth(), 1);
+      const e = new Date(end.getFullYear(), end.getMonth(), 1);
+      return Math.max(1, (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth()) + 1);
     }
 
     function render() {
-      const now = new Date();
       const list = document.getElementById("goalList");
       list.innerHTML = "";
-      let totalRequired = 0;
+      let totalRemaining = 0;
+      let months = 0;
       let goalsAchieved = 0;
+      let now = new Date();
 
-      const validGoals = goals.filter(g => !g.saved && g.startDate <= now);
-      const futureGoals = goals.filter(g => !g.saved && g.startDate > now);
+      goals.sort((a, b) => a.date - b.date);
 
-      validGoals.forEach(goal => {
-        totalRequired += goal.price;
-      });
+      goals.forEach((goal, i) => {
+        const isFuture = goal.startDate > now;
+        const monthsLeft = calculateMonthsLeft(goal.startDate, goal.date);
+        const indivRem = Math.max(goal.price - totalSaved, 0);
+        const indivMonthly = goal.saved ? 0 : Math.ceil(indivRem / monthsLeft);
 
-      const monthsLeft = validGoals.map(g => calculateMonths(new Date(Math.max(now, g.startDate)), new Date(g.date)));
-      const totalMonths = monthsLeft.reduce((a, b) => a + b, 0);
-      const monthlyRequired = totalMonths > 0 ? Math.ceil(Math.max(totalRequired - totalSaved, 0) / totalMonths) : 0;
-
-      document.getElementById("monthlyRequired").textContent = monthlyRequired;
-      document.getElementById("amountSaved").textContent = totalSaved;
-
-      goals.sort((a, b) => new Date(a.date) - new Date(b.date)).forEach((goal, i) => {
-        const card = document.createElement("div");
-        card.className = "goal-card";
-        if (goal.saved) {
-          card.classList.add("completed");
-          goalsAchieved++;
+        if (!goal.saved && !isFuture) {
+          totalRemaining += indivRem;
+          months = Math.max(months, monthsLeft);
         }
 
-        const individualMonths = calculateMonths(new Date(Math.max(now, goal.startDate)), new Date(goal.date));
-        const perMonth = Math.ceil(goal.price / individualMonths);
+        const card = document.createElement("div");
+        card.className = "goal-card" + (goal.saved ? " completed" : "");
 
         card.innerHTML = `
           <h4>${goal.name}</h4>
-          <p>Price: ₹${goal.price}</p>
-          <p>Start: ${new Date(goal.startDate).toDateString()}</p>
-          <p>Deadline: ${new Date(goal.date).toDateString()}</p>
-          ${!goal.saved ? `<p><strong>Monthly Requirement:</strong> ₹${perMonth}</p>` : ""}
+          <p>Amount: ₹${goal.price}</p>
+          <p>Start: ${goal.startDate.toDateString()}</p>
+          <p>Deadline: ${goal.date.toDateString()}</p>
+          <p>Monthly Required: ₹${indivMonthly}</p>
           <div class="goal-actions">
-            ${!goal.saved ? `<button onclick="completeGoal(${i})">Mark as Done</button>` : ""}
+            ${!goal.saved ? `<button onclick="completeGoal(${i})">Done</button>` : ""}
             <button onclick="editGoal(${i})">Edit</button>
             <button onclick="deleteGoal(${i})">Delete</button>
           </div>
         `;
         list.appendChild(card);
+
+        if (goal.saved) goalsAchieved++;
       });
 
+      const monthly = months > 0 ? Math.ceil(totalRemaining / months) : 0;
+      document.getElementById("amountSaved").textContent = totalSaved;
+      document.getElementById("monthlyRequired").textContent = monthly;
       document.getElementById("completedGoals").textContent = goalsAchieved;
 
       const historyList = document.getElementById("historyList");
       historyList.innerHTML = "";
       completed.forEach((c, i) => {
         const li = document.createElement("li");
-        li.innerHTML = `${c.name} (₹${c.price}) - ${new Date(c.date).toLocaleDateString()}
-          <button onclick="deleteHistoryItem(${i})" style="margin-left:10px;color:red;border:none;background:none;cursor:pointer;">✖</button>`;
+        li.innerHTML = `${c.name} (₹${c.price}) - ${c.date.toLocaleDateString()}
+          <button onclick="deleteHistoryItem(${i})" style="margin-left:10px;background:none;color:red;">✖</button>`;
         historyList.appendChild(li);
       });
     }
@@ -310,21 +332,14 @@
     function completeGoal(index) {
       const goal = goals[index];
       if (totalSaved < goal.price) {
-        alert("You haven't saved enough to complete this goal.");
+        alert("You haven't saved enough to mark this as done.");
         return;
       }
-      goals[index].saved = true;
+      totalSaved -= goal.price;
+      goal.saved = true;
       completed.push(goal);
       saveData();
       render();
-    }
-
-    function deleteGoal(index) {
-      if (confirm("Delete this goal?")) {
-        goals.splice(index, 1);
-        saveData();
-        render();
-      }
     }
 
     function editGoal(index) {
@@ -346,8 +361,16 @@
       }
     }
 
+    function deleteGoal(index) {
+      if (confirm("Delete this goal?")) {
+        goals.splice(index, 1);
+        saveData();
+        render();
+      }
+    }
+
     function deleteHistoryItem(index) {
-      if (confirm("Delete this completed goal from history?")) {
+      if (confirm("Remove from completed goals?")) {
         completed.splice(index, 1);
         saveData();
         render();
@@ -355,7 +378,7 @@
     }
 
     function clearHistory() {
-      if (confirm("Delete all completed goals?")) {
+      if (confirm("Clear all completed goals?")) {
         completed = [];
         saveData();
         render();
@@ -363,10 +386,18 @@
     }
 
     function toggleTheme() {
-      const current = document.body.getAttribute("data-theme");
-      document.body.setAttribute("data-theme", current === "light" ? "dark" : "light");
+      const body = document.body;
+      const next = body.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      body.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
     }
 
+    function loadTheme() {
+      const theme = localStorage.getItem("theme") || "light";
+      document.body.setAttribute("data-theme", theme);
+    }
+
+    loadTheme();
     loadData();
     render();
   </script>
