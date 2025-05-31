@@ -228,11 +228,15 @@
     function addGoal() {
       const name = document.getElementById("name").value;
       const price = parseFloat(document.getElementById("price").value);
-      const startDate = new Date(document.getElementById("startDate").value);
-      const targetDate = new Date(document.getElementById("targetDate").value);
-      if (!name || isNaN(price) || isNaN(startDate) || isNaN(targetDate)) return alert("Please fill all fields correctly");
+      const startDateValue = document.getElementById("startDate").value;
+      const targetDateValue = document.getElementById("targetDate").value;
 
-      goals.push({ name, price, startDate, date: targetDate, saved: false });
+      if (!name || isNaN(price) || !startDateValue || !targetDateValue) {
+        alert("Please fill all fields correctly");
+        return;
+      }
+
+      goals.push({ name, price, startDate: startDateValue, date: targetDateValue, saved: false });
       saveData();
       render();
 
@@ -243,8 +247,8 @@
     }
 
     function calculateMonths(startDate, endDate) {
-      const start = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
-      const end = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+      const start = new Date(startDate);
+      const end = new Date(endDate);
       return Math.max(1, (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1);
     }
 
@@ -255,16 +259,18 @@
       let totalRequired = 0;
       let goalsAchieved = 0;
 
-      const validGoals = goals.filter(g => !g.saved && g.startDate <= now);
-      const futureGoals = goals.filter(g => !g.saved && g.startDate > now);
+      const validGoals = goals.filter(g => !g.saved && new Date(g.startDate) <= now);
 
       validGoals.forEach(goal => {
         totalRequired += goal.price;
       });
 
-      const monthsLeft = validGoals.map(g => calculateMonths(new Date(Math.max(now, g.startDate)), new Date(g.date)));
-      const totalMonths = monthsLeft.reduce((a, b) => a + b, 0);
-      const monthlyRequired = totalMonths > 0 ? Math.ceil(Math.max(totalRequired - totalSaved, 0) / totalMonths) : 0;
+      let totalMonthsForActiveGoals = 0;
+      validGoals.forEach(g => {
+          totalMonthsForActiveGoals += calculateMonths(new Date(Math.max(now.getTime(), new Date(g.startDate).getTime())), g.date);
+      });
+
+      const monthlyRequired = totalMonthsForActiveGoals > 0 ? Math.ceil(Math.max(totalRequired - totalSaved, 0) / totalMonthsForActiveGoals) : 0;
 
       document.getElementById("monthlyRequired").textContent = monthlyRequired;
       document.getElementById("amountSaved").textContent = totalSaved;
@@ -277,7 +283,7 @@
           goalsAchieved++;
         }
 
-        const individualMonths = calculateMonths(new Date(Math.max(now, goal.startDate)), new Date(goal.date));
+        const individualMonths = calculateMonths(new Date(Math.max(now.getTime(), new Date(goal.startDate).getTime())), goal.date);
         const perMonth = Math.ceil(goal.price / individualMonths);
 
         card.innerHTML = `
@@ -331,15 +337,15 @@
       const goal = goals[index];
       const name = prompt("Update name:", goal.name);
       const price = prompt("Update price:", goal.price);
-      const startDate = prompt("Update start date (YYYY-MM-DD):", goal.startDate.toISOString().slice(0, 10));
-      const date = prompt("Update deadline (YYYY-MM-DD):", goal.date.toISOString().slice(0, 10));
-      if (name && price && startDate && date) {
+      const startDate = prompt("Update start date (YYYY-MM-DD):", goal.startDate);
+      const date = prompt("Update deadline (YYYY-MM-DD):", goal.date);
+      if (name !== null && price !== null && startDate !== null && date !== null) {
         goals[index] = {
           ...goal,
           name,
           price: parseFloat(price),
-          startDate: new Date(startDate),
-          date: new Date(date)
+          startDate: startDate,
+          date: date
         };
         saveData();
         render();
