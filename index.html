@@ -204,27 +204,31 @@
     let totalSaved = 0;
     let completed = [];
 
+    // Saves the current state of goals, totalSaved, and completed goals to localStorage.
     function saveData() {
       localStorage.setItem("goals", JSON.stringify(goals));
       localStorage.setItem("saved", totalSaved);
       localStorage.setItem("completed", JSON.stringify(completed));
     }
 
+    // Loads the saved data from localStorage into the respective variables.
     function loadData() {
       goals = JSON.parse(localStorage.getItem("goals")) || [];
       totalSaved = Number(localStorage.getItem("saved")) || 0;
       completed = JSON.parse(localStorage.getItem("completed")) || [];
     }
 
+    // Updates the total amount saved based on user input and re-renders.
     function updateTotalSaved() {
       const val = document.getElementById("updateSaved").value;
       if (val && val >= 0) {
         totalSaved = Number(val);
         saveData();
-        render();
+        render(); // Re-render to update monthly requirement
       }
     }
 
+    // Adds a new goal to the goals array.
     function addGoal() {
       const name = document.getElementById("name").value;
       const price = parseFloat(document.getElementById("price").value);
@@ -236,45 +240,75 @@
         return;
       }
 
+      // Store dates as ISO strings (YYYY-MM-DD) to prevent parsing issues on refresh.
       goals.push({ name, price, startDate: startDateValue, date: targetDateValue, saved: false });
       saveData();
       render();
 
+      // Clear form fields after adding a goal.
       document.getElementById("name").value = '';
       document.getElementById("price").value = '';
       document.getElementById("startDate").value = '';
       document.getElementById("targetDate").value = '';
     }
 
+    // Calculates the number of months between two dates.
+    // Ensures a minimum of 1 month to avoid division by zero.
     function calculateMonths(startDate, endDate) {
       const start = new Date(startDate);
       const end = new Date(endDate);
+      // Calculate months difference, ensuring it's at least 1.
       return Math.max(1, (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1);
     }
 
+    // Renders the goals and summary on the webpage.
     function render() {
       const now = new Date();
       const list = document.getElementById("goalList");
       list.innerHTML = "";
-      let totalRequired = 0;
       let goalsAchieved = 0;
 
-      const validGoals = goals.filter(g => !g.saved && new Date(g.startDate) <= now);
+      // Filter for goals that are not yet saved and whose deadline is in the future or today.
+      const activeGoals = goals.filter(g => !g.saved && new Date(g.date) >= now);
 
-      validGoals.forEach(goal => {
-        totalRequired += goal.price;
+      let totalCostOfActiveGoals = 0;
+      activeGoals.forEach(g => {
+          totalCostOfActiveGoals += g.price;
       });
 
-      let totalMonthsForActiveGoals = 0;
-      validGoals.forEach(g => {
-          totalMonthsForActiveGoals += calculateMonths(new Date(Math.max(now.getTime(), new Date(g.startDate).getTime())), g.date);
-      });
+      let totalMonthlyRequiredSum = 0; // This will be the sum of individual monthly requirements
 
-      const monthlyRequired = totalMonthsForActiveGoals > 0 ? Math.ceil(Math.max(totalRequired - totalSaved, 0) / totalMonthsForActiveGoals) : 0;
+      if (totalCostOfActiveGoals > 0) { // Only calculate if there are active goals to fund
+          activeGoals.forEach(g => {
+              // Calculate the proportion of the total active goal cost this goal represents
+              const proportionOfTotalCost = g.price / totalCostOfActiveGoals;
+
+              // Attribute a portion of the totalSaved amount to this specific goal
+              // Ensure savedAttributedToGoal doesn't exceed totalSaved
+              const savedAttributedToGoal = Math.min(totalSaved, totalSaved * proportionOfTotalCost);
+
+              // Calculate the effective remaining price for this goal after attributing savings
+              const remainingGoalPrice = Math.max(0, g.price - savedAttributedToGoal);
+
+              // Calculate months from now (or goal's start date if in future) to the target date.
+              const effectiveStartDate = new Date(Math.max(now.getTime(), new Date(g.startDate).getTime()));
+              const individualMonths = calculateMonths(effectiveStartDate, g.date);
+
+              // Calculate the monthly contribution for this goal based on its remaining price
+              const perMonthContribution = Math.ceil(remainingGoalPrice / individualMonths);
+
+              totalMonthlyRequiredSum += perMonthContribution; // Sum up individual contributions
+          });
+      }
+
+      // The overall monthly requirement is now the sum of individual monthly requirements,
+      // where each individual requirement has been reduced by a proportional share of totalSaved.
+      const monthlyRequired = totalMonthlyRequiredSum;
 
       document.getElementById("monthlyRequired").textContent = monthlyRequired;
       document.getElementById("amountSaved").textContent = totalSaved;
 
+      // Sort goals by deadline and render each goal card.
       goals.sort((a, b) => new Date(a.date) - new Date(b.date)).forEach((goal, i) => {
         const card = document.createElement("div");
         card.className = "goal-card";
@@ -283,7 +317,10 @@
           goalsAchieved++;
         }
 
-        const individualMonths = calculateMonths(new Date(Math.max(now.getTime(), new Date(goal.startDate).getTime())), goal.date);
+        // Calculate individual monthly requirement for display per goal.
+        // This calculation should use the goal's full price, as it's the target for that specific item.
+        const effectiveStartDateForDisplay = new Date(Math.max(now.getTime(), new Date(goal.startDate).getTime()));
+        const individualMonths = calculateMonths(effectiveStartDateForDisplay, goal.date);
         const perMonth = Math.ceil(goal.price / individualMonths);
 
         card.innerHTML = `
@@ -303,6 +340,7 @@
 
       document.getElementById("completedGoals").textContent = goalsAchieved;
 
+      // Render completed goals history.
       const historyList = document.getElementById("historyList");
       historyList.innerHTML = "";
       completed.forEach((c, i) => {
@@ -313,6 +351,7 @@
       });
     }
 
+    // Marks a goal as completed.
     function completeGoal(index) {
       const goal = goals[index];
       if (totalSaved < goal.price) {
@@ -325,6 +364,7 @@
       render();
     }
 
+    // Deletes a goal from the list.
     function deleteGoal(index) {
       if (confirm("Delete this goal?")) {
         goals.splice(index, 1);
@@ -333,25 +373,28 @@
       }
     }
 
+    // Edits an existing goal's details.
     function editGoal(index) {
       const goal = goals[index];
       const name = prompt("Update name:", goal.name);
       const price = prompt("Update price:", goal.price);
       const startDate = prompt("Update start date (YYYY-MM-DD):", goal.startDate);
       const date = prompt("Update deadline (YYYY-MM-DD):", goal.date);
-      if (name !== null && price !== null && startDate !== null && date !== null) {
+
+      if (name !== null && price !== null && startDate !== null && date !== null) { // Check for null to handle cancel button
         goals[index] = {
           ...goal,
           name,
           price: parseFloat(price),
-          startDate: startDate,
-          date: date
+          startDate: startDate, // Store as string
+          date: date // Store as string
         };
         saveData();
         render();
       }
     }
 
+    // Deletes a specific item from the completed goals history.
     function deleteHistoryItem(index) {
       if (confirm("Delete this completed goal from history?")) {
         completed.splice(index, 1);
@@ -360,6 +403,7 @@
       }
     }
 
+    // Clears all completed goals from history.
     function clearHistory() {
       if (confirm("Delete all completed goals?")) {
         completed = [];
@@ -368,11 +412,13 @@
       }
     }
 
+    // Toggles between light and dark themes.
     function toggleTheme() {
       const current = document.body.getAttribute("data-theme");
       document.body.setAttribute("data-theme", current === "light" ? "dark" : "light");
     }
 
+    // Load data and render the page on initial load.
     loadData();
     render();
   </script>
