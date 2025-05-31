@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WishVault - Savings Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f0f2f5;
+      --text: #222;
+      --card: #fff;
+      --header: #053C5E;
+      --accent: #053C5E;
+    }
+    [data-theme="dark"] {
+      --bg: #121212;
+      --text: #E0E0E0;
+      --card: #1F1F1F;
+      --header: #1F1F1F;
+      --accent: #0353A4;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      margin: 0;
+      background-color: var(--bg);
+      color: var(--text);
+      transition: background 0.3s, color 0.3s;
+      position: relative;
+      min-height: 100vh;
+      padding-bottom: 100px;
+    }
+    header {
+      background-color: var(--header);
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-weight: 600;
+    }
+    .container {
+      padding: 1rem;
+      max-width: 800px;
+      margin: auto;
+    }
+    .goal-form input, .goal-form button {
+      padding: 0.5rem;
+      margin: 0.3rem 0.2rem;
+      font-family: 'Montserrat', sans-serif;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .goal-card {
+      background-color: var(--card);
+      border-radius: 15px;
+      padding: 1rem;
+      margin: 1rem 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .goal-card.completed {
+      background-color: #4caf50;
+      color: white;
+    }
+    [data-theme="light"] .goal-card.completed {
+      background-color: #d4edda;
+      color: #222;
+    }
+    .goal-actions button {
+      margin-right: 0.5rem;
+    }
+    .summary {
+      background-color: var(--card);
+      padding: 1rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .history {
+      margin-top: 2rem;
+    }
+    .theme-toggle {
+      position: fixed;
+      bottom: 60px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: var(--accent);
+      color: white;
+      font-size: 1.2rem;
+      border: none;
+      cursor: pointer;
+      z-index: 10;
+    }
+    .add-goal-btn {
+      position: fixed;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--accent);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .history-controls button {
+      background-color: crimson;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    ul#historyList li {
+      margin-bottom: 5px;
+    }
+    #splash {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #001021;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 100;
+      font-size: 1.2rem;
+      font-weight: 500;
+      animation: fadeout 1s ease 2.5s forwards;
+      white-space: normal;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      text-align: center;
+      padding: 1rem;
+    }
+    @keyframes fadeout {
+      to {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: var(--header);
+      color: white;
+      text-align: center;
+      padding: 0.7rem 1rem;
+      font-size: 0.9rem;
+      z-index: 1000;
+      box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body data-theme="light">
+  <div id="splash">
+    <p>“Do not save what is left after spending, but spend what is left after saving.”</p>
+    <small>- Warren Buffett</small>
+  </div>
+
+  <header>WishVault - Savings Tracker</header>
+
+  <div class="container">
+    <div class="summary">
+      <h3>Summary</h3>
+      <p>Total Amount Saved: ₹<span id="amountSaved">0</span></p>
+      <p>Total Monthly Saving Required: ₹<span id="monthlyRequired">0</span></p>
+      <p>Goals Achieved: <span id="completedGoals">0</span></p>
+      <input type="number" id="updateSaved" placeholder="Update total saved" />
+      <button onclick="updateTotalSaved()">Update</button>
+    </div>
+
+    <div class="goal-form">
+      <input type="text" id="name" placeholder="Item name" />
+      <input type="number" id="price" placeholder="Price (₹)" />
+      <input type="date" id="startDate" />
+      <input type="date" id="targetDate" />
+    </div>
+
+    <div id="goalList"></div>
+
+    <div class="history">
+      <h3>Completed Goals</h3>
+      <ul id="historyList"></ul>
+      <div class="history-controls">
+        <button onclick="clearHistory()">Delete All History</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="add-goal-btn" onclick="addGoal()">Add Goal</button>
+  <button class="theme-toggle" onclick="toggleTheme()">🌗</button>
+
+  <footer>
+    Developed by © Hameed Afsar K M
+  </footer>
+
+  <script>
+    let goals = [];
+    let totalSaved = 0;
+    let completed = [];
+
+    function saveData() {
+      localStorage.setItem("goals", JSON.stringify(goals));
+      localStorage.setItem("saved", totalSaved);
+      localStorage.setItem("completed", JSON.stringify(completed));
+    }
+
+    function loadData() {
+      goals = JSON.parse(localStorage.getItem("goals")) || [];
+      totalSaved = Number(localStorage.getItem("saved")) || 0;
+      completed = JSON.parse(localStorage.getItem("completed")) || [];
+    }
+
+    function updateTotalSaved() {
+      const val = document.getElementById("updateSaved").value;
+      if (val && val >= 0) {
+        totalSaved = Number(val);
+        saveData();
+        render();
+      }
+    }
+
+    function addGoal() {
+      const name = document.getElementById("name").value;
+      const price = parseFloat(document.getElementById("price").value);
+      const startDate = new Date(document.getElementById("startDate").value);
+      const targetDate = new Date(document.getElementById("targetDate").value);
+      if (!name || isNaN(price) || isNaN(startDate) || isNaN(targetDate)) return alert("Please fill all fields correctly");
+
+      goals.push({ name, price, startDate, date: targetDate, saved: false });
+      saveData();
+      render();
+
+      document.getElementById("name").value = '';
+      document.getElementById("price").value = '';
+      document.getElementById("startDate").value = '';
+      document.getElementById("targetDate").value = '';
+    }
+
+    function calculateMonths(startDate, endDate) {
+      const start = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+      const end = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+      return Math.max(1, (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1);
+    }
+
+    function render() {
+      const now = new Date();
+      const list = document.getElementById("goalList");
+      list.innerHTML = "";
+      let totalRequired = 0;
+      let goalsAchieved = 0;
+
+      const validGoals = goals.filter(g => !g.saved && g.startDate <= now);
+      const futureGoals = goals.filter(g => !g.saved && g.startDate > now);
+
+      validGoals.forEach(goal => {
+        totalRequired += goal.price;
+      });
+
+      const monthsLeft = validGoals.map(g => calculateMonths(new Date(Math.max(now, g.startDate)), new Date(g.date)));
+      const totalMonths = monthsLeft.reduce((a, b) => a + b, 0);
+      const monthlyRequired = totalMonths > 0 ? Math.ceil(Math.max(totalRequired - totalSaved, 0) / totalMonths) : 0;
+
+      document.getElementById("monthlyRequired").textContent = monthlyRequired;
+      document.getElementById("amountSaved").textContent = totalSaved;
+
+      goals.sort((a, b) => new Date(a.date) - new Date(b.date)).forEach((goal, i) => {
+        const card = document.createElement("div");
+        card.className = "goal-card";
+        if (goal.saved) {
+          card.classList.add("completed");
+          goalsAchieved++;
+        }
+
+        const individualMonths = calculateMonths(new Date(Math.max(now, goal.startDate)), new Date(goal.date));
+        const perMonth = Math.ceil(goal.price / individualMonths);
+
+        card.innerHTML = `
+          <h4>${goal.name}</h4>
+          <p>Price: ₹${goal.price}</p>
+          <p>Start: ${new Date(goal.startDate).toDateString()}</p>
+          <p>Deadline: ${new Date(goal.date).toDateString()}</p>
+          ${!goal.saved ? `<p><strong>Monthly Requirement:</strong> ₹${perMonth}</p>` : ""}
+          <div class="goal-actions">
+            ${!goal.saved ? `<button onclick="completeGoal(${i})">Mark as Done</button>` : ""}
+            <button onclick="editGoal(${i})">Edit</button>
+            <button onclick="deleteGoal(${i})">Delete</button>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+
+      document.getElementById("completedGoals").textContent = goalsAchieved;
+
+      const historyList = document.getElementById("historyList");
+      historyList.innerHTML = "";
+      completed.forEach((c, i) => {
+        const li = document.createElement("li");
+        li.innerHTML = `${c.name} (₹${c.price}) - ${new Date(c.date).toLocaleDateString()}
+          <button onclick="deleteHistoryItem(${i})" style="margin-left:10px;color:red;border:none;background:none;cursor:pointer;">✖</button>`;
+        historyList.appendChild(li);
+      });
+    }
+
+    function completeGoal(index) {
+      const goal = goals[index];
+      if (totalSaved < goal.price) {
+        alert("You haven't saved enough to complete this goal.");
+        return;
+      }
+      goals[index].saved = true;
+      completed.push(goal);
+      saveData();
+      render();
+    }
+
+    function deleteGoal(index) {
+      if (confirm("Delete this goal?")) {
+        goals.splice(index, 1);
+        saveData();
+        render();
+      }
+    }
+
+    function editGoal(index) {
+      const goal = goals[index];
+      const name = prompt("Update name:", goal.name);
+      const price = prompt("Update price:", goal.price);
+      const startDate = prompt("Update start date (YYYY-MM-DD):", goal.startDate.toISOString().slice(0, 10));
+      const date = prompt("Update deadline (YYYY-MM-DD):", goal.date.toISOString().slice(0, 10));
+      if (name && price && startDate && date) {
+        goals[index] = {
+          ...goal,
+          name,
+          price: parseFloat(price),
+          startDate: new Date(startDate),
+          date: new Date(date)
+        };
+        saveData();
+        render();
+      }
+    }
+
+    function deleteHistoryItem(index) {
+      if (confirm("Delete this completed goal from history?")) {
+        completed.splice(index, 1);
+        saveData();
+        render();
+      }
+    }
+
+    function clearHistory() {
+      if (confirm("Delete all completed goals?")) {
+        completed = [];
+        saveData();
+        render();
+      }
+    }
+
+    function toggleTheme() {
+      const current = document.body.getAttribute("data-theme");
+      document.body.setAttribute("data-theme", current === "light" ? "dark" : "light");
+    }
+
+    loadData();
+    render();
+  </script>
+</body>
+</html>
